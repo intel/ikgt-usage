@@ -1,0 +1,31 @@
+{
+  "cr0": {
+    "pg": {
+      "enable": 1,
+      "write": 3,
+      "sticky_value": 0
+    },
+    "wp": {
+      "enable": 1,
+      "write": 1,
+      "sticky_value": 0
+    }
+  },
+  "cr4": {
+    "pae": {
+      "enable": 1,
+      "write": 3,
+      "sticky_value": 0
+    }
+  },
+  "msr": {
+    "efer": {
+      "enable": 1,
+      "write": 3,
+      "sticky_value": 0
+    }
+  },
+  "log": {
+    "log.txt": "/configfs/ikgt_agent/log/log.txt"
+  }
+}
