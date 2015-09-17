@@ -75,7 +75,7 @@ def parse_and_remove_dir_structure(policy_data):
 def parse_policy():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-f", "--policy_file", help="JSON file defining evmm hardening policy", required=True)
-	parser.add_argument("-b", "--base_dir", help="Base directory to start from (eg. /configfs)", required=True)
+	parser.add_argument("-b", "--base_dir", help="Base directory to start from (eg. /sys/kernel/config)", required=True)
 	parser.add_argument("-r", "--remove_dir", action="store_true", help="Remove directory structure in policy file")
 	args = parser.parse_args()
 
