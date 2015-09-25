@@ -26,6 +26,6 @@
     }
   },
   "log": {
-    "log.txt": "/configfs/ikgt_agent/log/log.txt"
+    "log.txt": "/sys/kernel/config/ikgt_agent/log/log.txt"
   }
 }

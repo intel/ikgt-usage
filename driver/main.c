@@ -118,7 +118,7 @@ static void uninit_shared_regions(void)
 
 static int __init init_agent(void)
 {
-	PRINTK_INFO("%s: Built on %s @ %s\n", __func__, __DATE__, __TIME__);
+	PRINTK_INFO("%s\n", __func__);
 
 	if (!init_shared_regions()) {
 		PRINTK_ERROR("init_shared_regions failed\n");

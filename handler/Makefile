@@ -17,10 +17,6 @@ ifndef PROJS
 PWD=$(shell pwd)
 export PROJS=$(PWD)/../../../xmon
 
-export CC = gcc
-export AS = gcc
-export AR = ar
-
 debug ?= 0
 ifeq ($(debug), 1)
 export XMON_CMPL_OPT_FLAGS = -DDEBUG
@@ -36,6 +32,10 @@ export OUTDIR = $(PROJS)/build/linux/$(OUTPUTTYPE)/
 $(shell mkdir -p $(OUTDIR))
 $(shell mkdir -p $(BINDIR))
 endif # PROJS
+
+export CC = ${CROSS_COMPILE}gcc
+export AS = ${CROSS_COMPILE}gcc
+export AR = ${CROSS_COMPILE}ar
 
 $(shell mkdir -p $(OUTDIR)handler)
 
