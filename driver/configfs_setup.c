@@ -70,10 +70,20 @@ static struct config_group *group_children_make_group(struct config_group *group
 	return &cfg->group;
 }
 
+static ssize_t group_children_description_show(struct config_item *item,
+											   char *page)
+{
+		return sprintf(page,
+					   DRIVER_NAME"\n"
+					   "These file subsystem allows to create groups for various cpu assets.\n"
+					   "These groups can be cr0, cr4, msr, log, etc.\n");
+}
+
 static struct configfs_attribute group_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
+	.show       = group_children_description_show
 };
 
 static struct configfs_attribute *group_children_attrs[] = {
@@ -81,28 +91,12 @@ static struct configfs_attribute *group_children_attrs[] = {
 	NULL,
 };
 
-static ssize_t group_children_attr_show(struct config_item *item,
-struct configfs_attribute *attr,
-	char *page)
-{
-	return sprintf(page,
-		DRIVER_NAME"\n"
-		"These file subsystem allows to create groups for various cpu assets.\n"
-		"These groups can be cr0, cr4, msr, log, etc.\n");
-}
-
-static struct configfs_item_operations group_children_item_ops = {
-	.show_attribute = group_children_attr_show,
-};
-
-
 static struct configfs_group_operations group_children_group_ops = {
 	.make_group	= group_children_make_group,
 };
 
 static struct config_item_type group_children_type = {
-	.ct_item_ops	= &group_children_item_ops,
-	.ct_group_ops	= &group_children_group_ops,
+	.ct_group_ops = &group_children_group_ops,
 	.ct_attrs	= group_children_attrs,
 	.ct_owner	= THIS_MODULE,
 };
@@ -157,4 +151,3 @@ void uninit_configfs_setup(void)
 	for (i = 0; configfs_subsys[i]; i++)
 		configfs_unregister_subsystem(configfs_subsys[i]);
 }
-

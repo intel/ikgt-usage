@@ -46,23 +46,20 @@ static int valid_msr_attr(const char *name)
 }
 
 
-static ssize_t msr_cfg_store_enable(struct msr_cfg *msr_cfg,
+static ssize_t msr_cfg_enable_store(struct config_item *item,
 									const char *page,
 									size_t count);
 
-static ssize_t msr_cfg_store_write(struct msr_cfg *msr_cfg,
+static ssize_t msr_cfg_write_store(struct config_item *item,
 								   const char *page,
 								   size_t count);
 
-static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
+static ssize_t msr_cfg_sticky_value_store(struct config_item *item,
 										  const char *page,
 										  size_t count);
 
 /* to_msr_cfg() function */
 IKGT_CONFIGFS_TO_CONTAINER(msr_cfg);
-
-/* define attribute structure */
-CONFIGFS_ATTR_STRUCT(msr_cfg);
 
 /* item operations */
 IKGT_UINT32_SHOW(msr_cfg, enable);
@@ -75,13 +72,11 @@ IKGT_CONFIGFS_ATTR_RW(msr_cfg, write);
 IKGT_CONFIGFS_ATTR_RW(msr_cfg, sticky_value);
 
 static struct configfs_attribute *msr_cfg_attrs[] = {
-	&msr_cfg_attr_enable.attr,
-	&msr_cfg_attr_write.attr,
-	&msr_cfg_attr_sticky_value.attr,
+	&msr_cfg_attr_enable,
+	&msr_cfg_attr_write,
+	&msr_cfg_attr_sticky_value,
 	NULL,
 };
-
-CONFIGFS_ATTR_OPS(msr_cfg);
 
 
 static bool policy_set_msr(struct msr_cfg *msr_cfg, bool enable)
@@ -119,11 +114,13 @@ static bool policy_set_msr(struct msr_cfg *msr_cfg, bool enable)
 	return (ret == SUCCESS)?true:false;
 }
 
-static ssize_t msr_cfg_store_write(struct msr_cfg *msr_cfg,
+static ssize_t msr_cfg_write_store(struct config_item *item,
 								   const char *page,
 								   size_t count)
 {
 	unsigned long value;
+
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
 
 	if (msr_cfg->locked)
 		return -EPERM;
@@ -136,11 +133,13 @@ static ssize_t msr_cfg_store_write(struct msr_cfg *msr_cfg,
 	return count;
 }
 
-static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
+static ssize_t msr_cfg_sticky_value_store(struct config_item *item,
 										  const char *page,
 										  size_t count)
 {
 	unsigned long value;
+
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
 
 	if (msr_cfg->locked)
 		return -EPERM;
@@ -153,12 +152,14 @@ static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
 	return count;
 }
 
-static ssize_t msr_cfg_store_enable(struct msr_cfg *msr_cfg,
+static ssize_t msr_cfg_enable_store(struct config_item *item,
 									const char *page,
 									size_t count)
 {
 	unsigned long value;
 	bool ret = false;
+
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
 
 	if (kstrtoul(page, 0, &value))
 		return -EINVAL;
@@ -187,8 +188,6 @@ static void msr_cfg_release(struct config_item *item)
 
 static struct configfs_item_operations msr_cfg_ops = {
 	.release		= msr_cfg_release,
-	.show_attribute		= msr_cfg_attr_show,
-	.store_attribute	= msr_cfg_attr_store,
 };
 
 static struct config_item_type msr_cfg_type = {
@@ -219,27 +218,27 @@ static struct config_item *msr_make_item(struct config_group *group,
 	return &msr_cfg->item;
 }
 
+static ssize_t msr_children_description_show(struct config_item *item,
+									  char *page)
+{
+		return sprintf(page,
+					   "MSR\n"
+					   "\n"
+					   "Used in protected mode to control operations .  \n"
+					   "items are readable and writable.\n");
+}
+
 static struct configfs_attribute msr_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
+	.show       = msr_children_description_show
 };
 
 static struct configfs_attribute *msr_children_attrs[] = {
 	&msr_children_attr_description,
 	NULL,
 };
-
-static ssize_t msr_children_attr_show(struct config_item *item,
-struct configfs_attribute *attr,
-	char *page)
-{
-	return sprintf(page,
-		"MSR\n"
-		"\n"
-		"Used in protected mode to control operations .  \n"
-		"items are readable and writable.\n");
-}
 
 static void msr_children_release(struct config_item *item)
 {
@@ -248,7 +247,6 @@ static void msr_children_release(struct config_item *item)
 
 static struct configfs_item_operations msr_children_item_ops = {
 	.release	= msr_children_release,
-	.show_attribute = msr_children_attr_show,
 };
 
 static struct configfs_group_operations msr_children_group_ops = {
