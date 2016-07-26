@@ -55,35 +55,43 @@ static struct config_group *group_children_make_group(struct config_group *group
 
 	if (strcasecmp(name, GROUP_NAME_CR0) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-			get_cr0_children_type());
+									get_cr0_children_type());
 	} else if (strcasecmp(name, GROUP_NAME_CR4) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-			get_cr4_children_type());
+									get_cr4_children_type());
 	} else if (strcasecmp(name, GROUP_NAME_MSR) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-			get_msr_children_type());
+									get_msr_children_type());
 	} else if (strcasecmp(name, GROUP_NAME_LOG) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-			get_log_children_type());
+									get_log_children_type());
 	}
 
 	return &cfg->group;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 static ssize_t group_children_description_show(struct config_item *item,
 											   char *page)
+#else
+static ssize_t group_children_attr_show(struct config_item *item,
+										struct configfs_attribute *attr,
+										char *page)
+#endif
 {
-		return sprintf(page,
-					   DRIVER_NAME"\n"
-					   "These file subsystem allows to create groups for various cpu assets.\n"
-					   "These groups can be cr0, cr4, msr, log, etc.\n");
+	return sprintf(page,
+				   DRIVER_NAME"\n"
+				   "These file subsystem allows to create groups for various cpu assets.\n"
+				   "These groups can be cr0, cr4, msr, log, etc.\n");
 }
 
 static struct configfs_attribute group_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 	.show       = group_children_description_show
+#endif
 };
 
 static struct configfs_attribute *group_children_attrs[] = {
@@ -91,11 +99,20 @@ static struct configfs_attribute *group_children_attrs[] = {
 	NULL,
 };
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
+static struct configfs_item_operations group_children_item_ops = {
+	.show_attribute = group_children_attr_show,
+};
+#endif
+
 static struct configfs_group_operations group_children_group_ops = {
 	.make_group	= group_children_make_group,
 };
 
 static struct config_item_type group_children_type = {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
+	.ct_item_ops	= &group_children_item_ops,
+#endif
 	.ct_group_ops = &group_children_group_ops,
 	.ct_attrs	= group_children_attrs,
 	.ct_owner	= THIS_MODULE,
