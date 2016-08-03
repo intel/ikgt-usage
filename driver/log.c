@@ -43,7 +43,7 @@ static ssize_t log_children_attr_show(struct config_item *item,
 									  char *page)
 #endif
 {
-		return dump_log(page);
+	return dump_log(page);
 }
 
 
@@ -52,7 +52,7 @@ static struct configfs_attribute log_children_attr_description = {
 	.ca_name	= "log.txt",
 	.ca_mode	= S_IRUGO,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
-	.show       = log_children_show,
+	.show		= log_children_show,
 #endif
 };
 

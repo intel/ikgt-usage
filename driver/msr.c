@@ -174,11 +174,10 @@ static ssize_t msr_cfg_sticky_value_store(struct config_item *item,
 										  size_t count)
 {
 	struct msr_cfg *msr_cfg = to_msr_cfg(item);
-
 #else
 static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
-								   const char *page,
-								   size_t count)
+										  const char *page,
+										  size_t count)
 {
 #endif
 	unsigned long value;
@@ -200,7 +199,7 @@ static ssize_t msr_cfg_enable_store(struct config_item *item,
 									size_t count)
 {
 
-  struct msr_cfg *msr_cfg = to_msr_cfg(item);
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
 #else
 static ssize_t msr_cfg_store_enable(struct msr_cfg *msr_cfg,
 									const char *page,
@@ -236,7 +235,7 @@ static void msr_cfg_release(struct config_item *item)
 }
 
 static struct configfs_item_operations msr_cfg_ops = {
-	.release		= msr_cfg_release,
+	 .release	     = msr_cfg_release,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 	.show_attribute	 = msr_cfg_attr_show,
 	.store_attribute = msr_cfg_attr_store,
@@ -266,7 +265,7 @@ static struct config_item *msr_make_item(struct config_group *group,
 	}
 
 	config_item_init_type_name(&msr_cfg->item, name,
-		&msr_cfg_type);
+							   &msr_cfg_type);
 
 	return &msr_cfg->item;
 }
@@ -282,11 +281,11 @@ static ssize_t msr_children_attr_show(struct config_item *item,
 									  char *page)
 #endif
 {
-		return sprintf(page,
-					   "MSR\n"
-					   "\n"
-					   "Used in protected mode to control operations .  \n"
-					   "items are readable and writable.\n");
+	return sprintf(page,
+		       "MSR\n"
+		       "\n"
+		       "Used in protected mode to control operations .	\n"
+		       "items are readable and writable.\n");
 }
 
 static struct configfs_attribute msr_children_attr_description = {
@@ -294,7 +293,7 @@ static struct configfs_attribute msr_children_attr_description = {
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
-	.show       = msr_children_description_show,
+	.show		= msr_children_description_show,
 #endif
 };
 

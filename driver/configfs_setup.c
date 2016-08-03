@@ -55,16 +55,16 @@ static struct config_group *group_children_make_group(struct config_group *group
 
 	if (strcasecmp(name, GROUP_NAME_CR0) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-									get_cr0_children_type());
+			get_cr0_children_type());
 	} else if (strcasecmp(name, GROUP_NAME_CR4) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-									get_cr4_children_type());
+			get_cr4_children_type());
 	} else if (strcasecmp(name, GROUP_NAME_MSR) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-									get_msr_children_type());
+			get_msr_children_type());
 	} else if (strcasecmp(name, GROUP_NAME_LOG) == 0) {
 		config_group_init_type_name(&cfg->group, name,
-									get_log_children_type());
+			get_log_children_type());
 	}
 
 	return &cfg->group;
@@ -90,7 +90,7 @@ static struct configfs_attribute group_children_attr_description = {
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
-	.show       = group_children_description_show
+	.show		= group_children_description_show
 #endif
 };
 
@@ -106,22 +106,22 @@ static struct configfs_item_operations group_children_item_ops = {
 #endif
 
 static struct configfs_group_operations group_children_group_ops = {
-	.make_group	= group_children_make_group,
+	.make_group = group_children_make_group,
 };
 
 static struct config_item_type group_children_type = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
-	.ct_item_ops	= &group_children_item_ops,
+	.ct_item_ops  = &group_children_item_ops,
 #endif
 	.ct_group_ops = &group_children_group_ops,
-	.ct_attrs	= group_children_attrs,
-	.ct_owner	= THIS_MODULE,
+	.ct_attrs     = group_children_attrs,
+	.ct_owner     = THIS_MODULE,
 };
 
 static struct configfs_subsystem group_children_subsys = {
 	.su_group			= {
 		.cg_item		= {
-			.ci_namebuf	= DRIVER_NAME,
+			.ci_namebuf = DRIVER_NAME,
 			.ci_type	= &group_children_type,
 		},
 	},
@@ -168,3 +168,4 @@ void uninit_configfs_setup(void)
 	for (i = 0; configfs_subsys[i]; i++)
 		configfs_unregister_subsystem(configfs_subsys[i]);
 }
+

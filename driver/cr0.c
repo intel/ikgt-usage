@@ -111,7 +111,7 @@ static int valid_cr0_attr(const char *name)
 }
 
 /*-------------------------------------------------------*
-*  Function      : policy_set_cr0()
+*  Function: policy_set_cr0()
 *  Purpose: send the CR0 policy settings to handler
 *  Parameters: cr0_cfg, enable
 *  Return: true=success, false=failure
@@ -192,8 +192,8 @@ static ssize_t cr0_cfg_sticky_value_store(struct config_item *item,
 	struct cr0_cfg *cr0_cfg = to_cr0_cfg(item);
 #else
 static ssize_t cr0_cfg_store_sticky_value(struct cr0_cfg *cr0_cfg,
-								   const char *page,
-								   size_t count)
+										  const char *page,
+										  size_t count)
 {
 #endif
 	unsigned long value;
@@ -214,7 +214,7 @@ static ssize_t cr0_cfg_enable_store(struct config_item *item,
 									const char *page,
 									size_t count)
 {
-    struct cr0_cfg *cr0_cfg = to_cr0_cfg(item);
+	struct cr0_cfg *cr0_cfg = to_cr0_cfg(item);
 #else
 static ssize_t cr0_cfg_store_enable(struct cr0_cfg *cr0_cfg,
 									const char *page,
@@ -250,7 +250,7 @@ static void cr0_cfg_release(struct config_item *item)
 }
 
 static struct configfs_item_operations cr0_cfg_ops = {
-	.release		 = cr0_cfg_release,
+	.release         = cr0_cfg_release,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 	.show_attribute	 = cr0_cfg_attr_show,
 	.store_attribute = cr0_cfg_attr_store,
@@ -290,7 +290,7 @@ static struct config_item *cr0_make_item(struct config_group *group,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 static ssize_t cr0_children_description_show(struct config_item *item,
-									  char *page)
+											 char *page)
 
 #else
 static ssize_t cr0_children_attr_show(struct config_item *item,
@@ -299,10 +299,10 @@ static ssize_t cr0_children_attr_show(struct config_item *item,
 #endif
 {
 	return sprintf(page,
-		"CR0\n"
-		"\n"
-		"Used in protected mode to control operations .  \n"
-		"items are readable and writable.\n");
+			"CR0\n"
+			"\n"
+			"Used in protected mode to control operations .	 \n"
+			"items are readable and writable.\n");
 }
 
 static struct configfs_attribute cr0_children_attr_description = {
@@ -310,7 +310,7 @@ static struct configfs_attribute cr0_children_attr_description = {
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
-	.show       = cr0_children_description_show,
+	.show	= cr0_children_description_show,
 #endif
 };
 

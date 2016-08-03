@@ -174,15 +174,15 @@ static ssize_t cr4_cfg_store_write(struct cr4_cfg *cr4_cfg,
 {
 #endif
 	unsigned long value;
-	
+
 	if (cr4_cfg->locked)
 		return -EPERM;
-	
+
 	if (kstrtoul(page, 0, &value))
 		return -EINVAL;
-	
+
 	cr4_cfg->write = value;
-	
+
 	return count;
 }
 
@@ -199,18 +199,18 @@ static ssize_t cr4_cfg_store_sticky_value(struct cr4_cfg *cr4_cfg,
 {
 #endif
 	unsigned long value;
-	
+
 	if (cr4_cfg->locked)
 		return -EPERM;
-	
+
 	if (kstrtoul(page, 0, &value))
 		return -EINVAL;
-	
+
 	cr4_cfg->sticky_value = value;
-	
+
 	return count;
 }
- 
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 static ssize_t cr4_cfg_enable_store(struct config_item *item,
 											const char *page,
@@ -253,10 +253,10 @@ static void cr4_cfg_release(struct config_item *item)
 }
 
 static struct configfs_item_operations cr4_cfg_ops = {
-	 .release = cr4_cfg_release,
+	.release = cr4_cfg_release,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
-	 .show_attribute	 = cr4_cfg_attr_show,
-	 .store_attribute = cr4_cfg_attr_store,
+	.show_attribute	 = cr4_cfg_attr_show,
+	.store_attribute = cr4_cfg_attr_store,
 #endif
 };
 
@@ -265,8 +265,8 @@ static struct config_item_type cr4_cfg_type = {
 	.ct_attrs = cr4_cfg_attrs,
 	.ct_owner = THIS_MODULE,
 };
- 
- 
+
+
 static struct config_item *cr4_make_item(struct config_group *group,
 										 const char *name)
 {
@@ -278,18 +278,18 @@ static struct config_item *cr4_make_item(struct config_group *group,
 		PRINTK_ERROR("Invalid CR4 bit name\n");
 		return ERR_PTR(-EINVAL);
 	}
-	
+
 	cr4_cfg = kzalloc(sizeof(struct cr4_cfg), GFP_KERNEL);
 	if (!cr4_cfg) {
 		return ERR_PTR(-ENOMEM);
 	}
-	
+
 	config_item_init_type_name(&cr4_cfg->item, name,
-							   &cr4_cfg_type);
-	
+		&cr4_cfg_type);
+
 	return &cr4_cfg->item;
 }
- 
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 static ssize_t cr4_children_description_show(struct config_item *item,
 											 char *page)
@@ -301,18 +301,18 @@ static ssize_t cr4_children_attr_show(struct config_item *item,
 #endif
 {
 	return sprintf(page,
-				   "CR4\n"
-				   "\n"
-				   "Used in protected mode to control operations .  \n"
-				   "items are readable and writable.\n");
+			"CR4\n"
+			"\n"
+			"Used in protected mode to control operations .	\n"
+			"items are readable and writable.\n");
 }
- 
+
 static struct configfs_attribute cr4_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
-	.show       = cr4_children_description_show,
+	.show		= cr4_children_description_show,
 #endif
 };
 
@@ -343,7 +343,7 @@ static struct config_item_type cr4_children_type = {
 	.ct_attrs	= cr4_children_attrs,
 	.ct_owner	= THIS_MODULE,
 };
- 
+
 struct config_item_type *get_cr4_children_type(void)
 {
 	return &cr4_children_type;
