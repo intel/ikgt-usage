@@ -13,6 +13,7 @@
 */
 
 #include <linux/module.h>
+#include <linux/version.h>
 
 #include "ikgt_api.h"
 #include "common.h"
@@ -45,7 +46,19 @@ static int valid_msr_attr(const char *name)
 	return -1;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t msr_cfg_enable_store(struct config_item *item,
+									const char *page,
+									size_t count);
 
+static ssize_t msr_cfg_write_store(struct config_item *item,
+								   const char *page,
+								   size_t count);
+
+static ssize_t msr_cfg_sticky_value_store(struct config_item *item,
+										  const char *page,
+										  size_t count);
+#else
 static ssize_t msr_cfg_store_enable(struct msr_cfg *msr_cfg,
 									const char *page,
 									size_t count);
@@ -57,12 +70,15 @@ static ssize_t msr_cfg_store_write(struct msr_cfg *msr_cfg,
 static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
 										  const char *page,
 										  size_t count);
+#endif
 
 /* to_msr_cfg() function */
 IKGT_CONFIGFS_TO_CONTAINER(msr_cfg);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 /* define attribute structure */
 CONFIGFS_ATTR_STRUCT(msr_cfg);
+#endif
 
 /* item operations */
 IKGT_UINT32_SHOW(msr_cfg, enable);
@@ -75,14 +91,22 @@ IKGT_CONFIGFS_ATTR_RW(msr_cfg, write);
 IKGT_CONFIGFS_ATTR_RW(msr_cfg, sticky_value);
 
 static struct configfs_attribute *msr_cfg_attrs[] = {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+	&msr_cfg_attr_enable,
+	&msr_cfg_attr_write,
+	&msr_cfg_attr_sticky_value,
+#else
 	&msr_cfg_attr_enable.attr,
 	&msr_cfg_attr_write.attr,
 	&msr_cfg_attr_sticky_value.attr,
+#endif
+
 	NULL,
 };
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 CONFIGFS_ATTR_OPS(msr_cfg);
-
+#endif
 
 static bool policy_set_msr(struct msr_cfg *msr_cfg, bool enable)
 {
@@ -119,10 +143,18 @@ static bool policy_set_msr(struct msr_cfg *msr_cfg, bool enable)
 	return (ret == SUCCESS)?true:false;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t msr_cfg_write_store(struct config_item *item,
+								   const char *page,
+								   size_t count)
+{
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
+#else
 static ssize_t msr_cfg_store_write(struct msr_cfg *msr_cfg,
 								   const char *page,
 								   size_t count)
 {
+#endif
 	unsigned long value;
 
 	if (msr_cfg->locked)
@@ -136,10 +168,18 @@ static ssize_t msr_cfg_store_write(struct msr_cfg *msr_cfg,
 	return count;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t msr_cfg_sticky_value_store(struct config_item *item,
+										  const char *page,
+										  size_t count)
+{
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
+#else
 static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
 										  const char *page,
 										  size_t count)
 {
+#endif
 	unsigned long value;
 
 	if (msr_cfg->locked)
@@ -153,10 +193,19 @@ static ssize_t msr_cfg_store_sticky_value(struct msr_cfg *msr_cfg,
 	return count;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t msr_cfg_enable_store(struct config_item *item,
+									const char *page,
+									size_t count)
+{
+
+	struct msr_cfg *msr_cfg = to_msr_cfg(item);
+#else
 static ssize_t msr_cfg_store_enable(struct msr_cfg *msr_cfg,
 									const char *page,
 									size_t count)
 {
+#endif
 	unsigned long value;
 	bool ret = false;
 
@@ -186,9 +235,11 @@ static void msr_cfg_release(struct config_item *item)
 }
 
 static struct configfs_item_operations msr_cfg_ops = {
-	.release		= msr_cfg_release,
-	.show_attribute		= msr_cfg_attr_show,
-	.store_attribute	= msr_cfg_attr_store,
+	 .release	     = msr_cfg_release,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
+	.show_attribute	 = msr_cfg_attr_show,
+	.store_attribute = msr_cfg_attr_store,
+#endif
 };
 
 static struct config_item_type msr_cfg_type = {
@@ -214,32 +265,42 @@ static struct config_item *msr_make_item(struct config_group *group,
 	}
 
 	config_item_init_type_name(&msr_cfg->item, name,
-		&msr_cfg_type);
+							   &msr_cfg_type);
 
 	return &msr_cfg->item;
+}
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+
+static ssize_t msr_children_description_show(struct config_item *item,
+											 char *page)
+
+#else
+static ssize_t msr_children_attr_show(struct config_item *item,
+									  struct configfs_attribute *attr,
+									  char *page)
+#endif
+{
+	return sprintf(page,
+		       "MSR\n"
+		       "\n"
+		       "Used in protected mode to control operations .	\n"
+		       "items are readable and writable.\n");
 }
 
 static struct configfs_attribute msr_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+	.show		= msr_children_description_show,
+#endif
 };
 
 static struct configfs_attribute *msr_children_attrs[] = {
 	&msr_children_attr_description,
 	NULL,
 };
-
-static ssize_t msr_children_attr_show(struct config_item *item,
-struct configfs_attribute *attr,
-	char *page)
-{
-	return sprintf(page,
-		"MSR\n"
-		"\n"
-		"Used in protected mode to control operations .  \n"
-		"items are readable and writable.\n");
-}
 
 static void msr_children_release(struct config_item *item)
 {
@@ -248,7 +309,9 @@ static void msr_children_release(struct config_item *item)
 
 static struct configfs_item_operations msr_children_item_ops = {
 	.release	= msr_children_release,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 	.show_attribute = msr_children_attr_show,
+#endif
 };
 
 static struct configfs_group_operations msr_children_group_ops = {

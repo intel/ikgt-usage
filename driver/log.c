@@ -13,6 +13,7 @@
 */
 
 #include <linux/module.h>
+#include <linux/version.h>
 
 #include "common.h"
 #include "policy_common.h"
@@ -33,11 +34,26 @@ static log_entry_t *log_data_gva;
 #define MAX_ELLIPSIS_SIZE  4
 #define MAX_CONFIGFS_PAGE_SIZE  (PAGE_4KB - MAX_SENTINEL_SIZE - MAX_ELLIPSIS_SIZE - 1)
 
+static int dump_log(char *configfs_page);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t log_children_show(struct config_item *item, char *page)
+#else
+static ssize_t log_children_attr_show(struct config_item *item,
+									  struct configfs_attribute *attr,
+									  char *page)
+#endif
+{
+	return dump_log(page);
+}
+
 
 static struct configfs_attribute log_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "log.txt",
 	.ca_mode	= S_IRUGO,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+	.show		= log_children_show,
+#endif
 };
 
 static struct configfs_attribute *log_children_attrs[] = {
@@ -45,13 +61,6 @@ static struct configfs_attribute *log_children_attrs[] = {
 	NULL,
 };
 
-static int dump_log(char *configfs_page);
-static ssize_t log_children_attr_show(struct config_item *item,
-struct configfs_attribute *attr,
-	char *page)
-{
-	return dump_log(page);
-}
 
 static void log_children_release(struct config_item *item)
 {
@@ -60,7 +69,9 @@ static void log_children_release(struct config_item *item)
 
 static struct configfs_item_operations log_children_item_ops = {
 	.release	= log_children_release,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 	.show_attribute = log_children_attr_show,
+#endif
 };
 
 static struct config_item_type log_children_type = {
@@ -227,4 +238,3 @@ void test_log(void)
 	PRINTK_INFO("After: p[size-1]=%c\n", p[size - 1]);
 }
 #endif
-

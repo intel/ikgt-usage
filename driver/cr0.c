@@ -13,6 +13,7 @@
 */
 
 #include <linux/module.h>
+#include <linux/version.h>
 
 #include "ikgt_api.h"
 #include "common.h"
@@ -35,6 +36,19 @@ static name_value_map cr0_bits[] = {
 	{}
 };
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t cr0_cfg_enable_store(struct config_item *item,
+									const char *page,
+									size_t count);
+
+static ssize_t cr0_cfg_write_store(struct config_item *item,
+								   const char *page,
+								   size_t count);
+
+static ssize_t cr0_cfg_sticky_value_store(struct config_item *item,
+										  const char *page,
+										  size_t count);
+#else
 static ssize_t cr0_cfg_store_enable(struct cr0_cfg *cr0_cfg,
 									const char *page,
 									size_t count);
@@ -46,12 +60,15 @@ static ssize_t cr0_cfg_store_write(struct cr0_cfg *cr0_cfg,
 static ssize_t cr0_cfg_store_sticky_value(struct cr0_cfg *cr0_cfg,
 										  const char *page,
 										  size_t count);
+#endif
 
 /* to_cr0_cfg() function */
 IKGT_CONFIGFS_TO_CONTAINER(cr0_cfg);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 /* define attribute structure */
 CONFIGFS_ATTR_STRUCT(cr0_cfg);
+#endif
 
 /* item operations */
 IKGT_UINT32_SHOW(cr0_cfg, enable);
@@ -64,14 +81,21 @@ IKGT_CONFIGFS_ATTR_RW(cr0_cfg, write);
 IKGT_CONFIGFS_ATTR_RW(cr0_cfg, sticky_value);
 
 static struct configfs_attribute *cr0_cfg_attrs[] = {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+	&cr0_cfg_attr_enable,
+	&cr0_cfg_attr_write,
+	&cr0_cfg_attr_sticky_value,
+#else
 	&cr0_cfg_attr_enable.attr,
 	&cr0_cfg_attr_write.attr,
 	&cr0_cfg_attr_sticky_value.attr,
+#endif
 	NULL,
 };
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 CONFIGFS_ATTR_OPS(cr0_cfg);
-
+#endif
 
 static int valid_cr0_attr(const char *name)
 {
@@ -87,7 +111,7 @@ static int valid_cr0_attr(const char *name)
 }
 
 /*-------------------------------------------------------*
-*  Function      : policy_set_cr0()
+*  Function: policy_set_cr0()
 *  Purpose: send the CR0 policy settings to handler
 *  Parameters: cr0_cfg, enable
 *  Return: true=success, false=failure
@@ -134,10 +158,18 @@ static bool policy_set_cr0(struct cr0_cfg *cr0_cfg, bool enable)
 	return (ret == SUCCESS)?true:false;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t cr0_cfg_write_store(struct config_item *item,
+								   const char *page,
+								   size_t count)
+{
+	struct cr0_cfg *cr0_cfg = to_cr0_cfg(item);
+#else
 static ssize_t cr0_cfg_store_write(struct cr0_cfg *cr0_cfg,
 								   const char *page,
 								   size_t count)
 {
+#endif
 	unsigned long value;
 
 	if (cr0_cfg->locked)
@@ -151,10 +183,19 @@ static ssize_t cr0_cfg_store_write(struct cr0_cfg *cr0_cfg,
 	return count;
 }
 
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t cr0_cfg_sticky_value_store(struct config_item *item,
+										  const char *page,
+										  size_t count)
+{
+	struct cr0_cfg *cr0_cfg = to_cr0_cfg(item);
+#else
 static ssize_t cr0_cfg_store_sticky_value(struct cr0_cfg *cr0_cfg,
 										  const char *page,
 										  size_t count)
 {
+#endif
 	unsigned long value;
 
 	if (cr0_cfg->locked)
@@ -168,10 +209,18 @@ static ssize_t cr0_cfg_store_sticky_value(struct cr0_cfg *cr0_cfg,
 	return count;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t cr0_cfg_enable_store(struct config_item *item,
+									const char *page,
+									size_t count)
+{
+	struct cr0_cfg *cr0_cfg = to_cr0_cfg(item);
+#else
 static ssize_t cr0_cfg_store_enable(struct cr0_cfg *cr0_cfg,
 									const char *page,
 									size_t count)
 {
+#endif
 	unsigned long value;
 	bool ret = false;
 
@@ -201,9 +250,11 @@ static void cr0_cfg_release(struct config_item *item)
 }
 
 static struct configfs_item_operations cr0_cfg_ops = {
-	.release		= cr0_cfg_release,
-	.show_attribute		= cr0_cfg_attr_show,
-	.store_attribute	= cr0_cfg_attr_store,
+	.release         = cr0_cfg_release,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
+	.show_attribute	 = cr0_cfg_attr_show,
+	.store_attribute = cr0_cfg_attr_store,
+#endif
 };
 
 static struct config_item_type cr0_cfg_type = {
@@ -237,10 +288,30 @@ static struct config_item *cr0_make_item(struct config_group *group,
 	return &cr0_cfg->item;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+static ssize_t cr0_children_description_show(struct config_item *item,
+											 char *page)
+
+#else
+static ssize_t cr0_children_attr_show(struct config_item *item,
+									  struct configfs_attribute *attr,
+									  char *page)
+#endif
+{
+	return sprintf(page,
+			"CR0\n"
+			"\n"
+			"Used in protected mode to control operations .	 \n"
+			"items are readable and writable.\n");
+}
+
 static struct configfs_attribute cr0_children_attr_description = {
 	.ca_owner	= THIS_MODULE,
 	.ca_name	= "description",
 	.ca_mode	= S_IRUGO,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
+	.show	= cr0_children_description_show,
+#endif
 };
 
 static struct configfs_attribute *cr0_children_attrs[] = {
@@ -248,16 +319,6 @@ static struct configfs_attribute *cr0_children_attrs[] = {
 	NULL,
 };
 
-static ssize_t cr0_children_attr_show(struct config_item *item,
-struct configfs_attribute *attr,
-	char *page)
-{
-	return sprintf(page,
-		"CR0\n"
-		"\n"
-		"Used in protected mode to control operations .  \n"
-		"items are readable and writable.\n");
-}
 
 static void cr0_children_release(struct config_item *item)
 {
@@ -266,7 +327,9 @@ static void cr0_children_release(struct config_item *item)
 
 static struct configfs_item_operations cr0_children_item_ops = {
 	.release	= cr0_children_release,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0)
 	.show_attribute = cr0_children_attr_show,
+#endif
 };
 
 static struct configfs_group_operations cr0_children_group_ops = {
