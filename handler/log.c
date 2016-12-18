@@ -80,8 +80,6 @@ static void init_cpu_log_buffer(uint64_t cpuid)
 */
 void start_log(ikgt_event_info_t *event_info, uint64_t log_addr)
 {
-	ikgt_gva_to_gpa_params_t gva2gpa;
-	ikgt_gpa_to_hva_params_t gpa2hva;
 	ikgt_status_t status = IKGT_STATUS_SUCCESS;
 	int i, j;
 	log_entry_t *cpu_buffer;
