@@ -307,7 +307,6 @@ static ikgt_status_t policy_msg_add(policy_update_rec_t *msg)
 static ikgt_status_t policy_msg_del(policy_update_rec_t *msg)
 {
 	policy_entry_t entry;
-	uint32_t  msr_id;
 	ikgt_status_t status = IKGT_STATUS_ERROR;
 
 	if (g_policy_table == NULL)
